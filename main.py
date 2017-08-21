@@ -63,6 +63,7 @@ class Window(QWidget):
 
    def scan_barcode(self):
       self.mes.hide()
+      self.checked = False
       btn = self.sender()
       #read barcode
       v = btn.property('value').toPyObject()
@@ -79,13 +80,15 @@ class Window(QWidget):
             return
       #update product
       if self.workstation['type'] == 'Test':
-         self.show_popup(btn)
-         return
-
-      self.update_state()
-      self.sender().setStyleSheet("background-color: grey")
-      self.sender().setEnabled(False)
-      self.show_message("Product scan success", "Success")
+         self.show_popup()
+         if self.checked:
+            self.sender().setStyleSheet("background-color: grey")
+            self.sender().setEnabled(False)
+      else:
+         self.update_state()
+         self.sender().setStyleSheet("background-color: grey")
+         self.sender().setEnabled(False)
+         self.show_message("Product scan success", "Success")
 
    def get_workstations(self):
       self.workstations = get_all('workstations').json()
@@ -98,7 +101,7 @@ class Window(QWidget):
          self.mes.setStyleSheet("color: green;")
       self.mes.show()
 
-   def show_popup(self,btn):
+   def show_popup(self):
       btnPass = QPushButton(self.popup)
       btnPass.setText('Pass')
       btnPass.setProperty('value', 'true')
@@ -118,14 +121,12 @@ class Window(QWidget):
       self.popup.show()
 
    def update_status(self):
+      self.checked = True
       btn = self.sender()
       self.status = btn.property('value').toPyObject()
       self.update_state()
       self.show_message("Update state success", "Success")
       self.popup.close()
-      self.sender().setStyleSheet("background-color: grey")
-      self.sender().setEnabled(False)
-
 
    def update_state(self):
       next_wrkstn_id = self.workstation['next_wrkstn_id'] if 'next_wrkstn_id' in self.workstation else ''
