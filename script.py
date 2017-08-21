@@ -34,6 +34,6 @@ def load_products(workstation_name):
         }
         create('products',data)
 
-# init_workstations()
+init_workstations()
 load_products('w1')
 
