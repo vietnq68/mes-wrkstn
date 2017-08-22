@@ -9,8 +9,7 @@ def get_all(name):
 def get_one(name,id):
     url = base_url + name +'/'+id
     response = requests.get(url)
-    print response.text
-    return response.text
+    return response
 
 def search(name,param):
     url = base_url + name +'?' +param

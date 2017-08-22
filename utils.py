@@ -20,7 +20,7 @@ def get_workstations():
 def gen_barcode(code,type):
    EAN = barcode.get_barcode_class(type)
    ean = EAN(code, writer=barcode.writer.ImageWriter())
-   path = 'image/'+code
+   path = 'image/products/'+code
    fullname = ean.save(path)
    path = path+'.png'
    im = Image.open(path)
