@@ -3,6 +3,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from utils import *
 from rest import *
+import datetime
 
 class Window(QWidget):
    def __init__(self):
@@ -131,13 +132,21 @@ class Window(QWidget):
    def update_state(self):
       next_wrkstn_id = self.workstation['next_wrkstn_id'] if 'next_wrkstn_id' in self.workstation else ''
       status= str(self.status)
+      scan_time = datetime.datetime.now()
       data = {
-            'status':status
+            'status':status,
+            'scan_time':scan_time,
       }
       if next_wrkstn_id:
          data['next_wrkstn_id'] =next_wrkstn_id
+      #update product
       update('products', self.product['_id'], data)
-      # if this workstation is the last
+      #update realtime products state in webapp
+      data['current_wrkstn_id'] = self.workstation['_id']
+      data['_id'] = self.product['_id']
+      data['pcb_id'] = self.product['pcb_id']
+      pass_workstation('products', self.product['_id'], data)
+      # if this workstation is the last, update realtime product number finish/error
       if 'next_wrkstn_id' not in self.workstation:
          if status == 'true':
             finished_socket('products',self.product['_id'])

@@ -36,4 +36,9 @@ def error_socket(name,id):
     url = base_url + name + '/' + id +'/error'
     response = requests.post(url)
     return response
+
+def pass_workstation(name,id,data):
+    url = base_url + name + '/' + id +'/pass_wrkstn'
+    response = requests.put(url,data)
+    return response
 # update('products','599576a6d1bc0c6bb7c6925e','')
