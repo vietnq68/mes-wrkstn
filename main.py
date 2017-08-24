@@ -235,13 +235,18 @@ class Window(QWidget):
          'workstation_name': self.workstation['name'],
          'workstation_id': self.workstation['_id'],
       }
+
+      product_data ={
+         'status':self.status
+      }
       if self.status =='true':
          data['next_wrkstn_name'] = 'None'
-         update('products',self.product['_id'],{'next_wrkstn_id':None})
-      else:
+      elif 'next_wrkstn_id' in self.workstation:
          next_workstation = get_one('workstations', self.workstation['next_wrkstn_id']).json()
          data['next_wrkstn_name'] = next_workstation['name']
-         update('products', self.product['_id'], {'next_wrkstn_id': next_workstation['_id']})
+         product_data['next_wrkstn_id'] = next_workstation['_id']
+
+      update('products', self.product['_id'], product_data)
       workstation_process(self.product['_id'], data)
 
 if __name__ == '__main__':
