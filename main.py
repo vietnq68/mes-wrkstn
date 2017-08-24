@@ -197,16 +197,14 @@ class Window(QWidget):
             'scan_time':scan_time,
             'current_wrkstn_id':self.workstation['_id'],
       }
-      if self.workstation['type'] == 'Test' and self.status == 'true':
-         next_wrkstn_id=''
-      if next_wrkstn_id:
-         data['next_wrkstn_id'] =next_wrkstn_id
+      # if next_wrkstn_id:
+      #    data['next_wrkstn_id'] =next_wrkstn_id
       #update product
       update('products', self.product['_id'], data)
       #update realtime products state in webapp
-      if next_wrkstn_id:
-         next_workstation = get_one('workstations', next_wrkstn_id).json()
-         data['next_wrkstn_name'] = next_workstation['name']
+      # if next_wrkstn_id:
+      #    next_workstation = get_one('workstations', next_wrkstn_id).json()
+      #    data['next_wrkstn_name'] = next_workstation['name']
       data['current_wrkstn_name'] = self.workstation['name']
       data['_id'] = self.product['_id']
       data['pcb_id'] = self.product['pcb_id']
@@ -237,6 +235,13 @@ class Window(QWidget):
          'workstation_name': self.workstation['name'],
          'workstation_id': self.workstation['_id'],
       }
+      if self.status =='true':
+         data['next_wrkstn_name'] = 'None'
+         update('products',self.product['_id'],{'next_wrkstn_id':None})
+      else:
+         next_workstation = get_one('workstations', self.workstation['next_wrkstn_id']).json()
+         data['next_wrkstn_name'] = next_workstation['name']
+         update('products', self.product['_id'], {'next_wrkstn_id': next_workstation['_id']})
       workstation_process(self.product['_id'], data)
 
 if __name__ == '__main__':
