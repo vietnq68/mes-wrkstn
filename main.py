@@ -176,7 +176,7 @@ class Window(QWidget):
 
    def on_fixed(self):
       self.fixed = True
-      self.status == 'true'
+      self.status = 'true'
       # read barcode
       v = self.sender().property('value').toPyObject()
       barcode = decode_barcode(v)[0][0]
@@ -241,6 +241,7 @@ class Window(QWidget):
       product_data ={
          'status':self.status
       }
+
       if self.status =='true':
          data['next_wrkstn_name'] = 'None'
       elif 'next_wrkstn_id' in self.workstation:
