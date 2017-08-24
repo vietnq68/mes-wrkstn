@@ -97,6 +97,7 @@ class Window(QWidget):
             self.sender().setEnabled(False)
       #handle if workstation is fix
       elif self.workstation['type'] == 'Fix':
+         self.update_state()
          self.product_fix_popup()
          if self.fixed:
             self.sender().setStyleSheet("background-color: grey")
@@ -175,6 +176,7 @@ class Window(QWidget):
 
    def on_fixed(self):
       self.fixed = True
+      self.status == 'true'
       # read barcode
       v = self.sender().property('value').toPyObject()
       barcode = decode_barcode(v)[0][0]
@@ -190,8 +192,8 @@ class Window(QWidget):
       self.fix_popup.close()
 
    def update_state(self):
-      next_wrkstn_id = self.workstation['next_wrkstn_id'] if 'next_wrkstn_id' in self.workstation else ''
-      status= str(self.status)
+      # next_wrkstn_id = self.workstation['next_wrkstn_id'] if 'next_wrkstn_id' in self.workstation else ''
+      # status= str(self.status)
       scan_time = datetime.datetime.now()
       data = {
             'scan_time':scan_time,
