@@ -5,10 +5,10 @@ from utils import *
 #init workstations
 def init_workstations():
     workstations = OrderedDict(
-        [('w1' , {'type':'Statistic','name':'w1'}),
-         ('w2' , {'type':'Statistic','name':'w2'}),
-         ('w3' , {'type':'Test','name':'w3'}),
-         ('w4',  {'type': 'Fix', 'name': 'w4'}),
+        [('w1' , {'type':'Statistic','name':'Top workstation'}),
+         ('w2' , {'type':'Statistic','name':'Bot workstation'}),
+         ('w3' , {'type':'Test','name':'Test workstation'}),
+         ('w4',  {'type': 'Fix', 'name': 'Fix workstation'}),
          ]
     )
     previous_id = ''
@@ -32,7 +32,8 @@ def import_products(workstation_name):
         fisrt_workstation = search('workstations',param).json()
         data ={
             'next_wrkstn_id':fisrt_workstation['_id'],
-            'pcb_id':pcbid
+            'pcb_id':pcbid,
+            'status':'N/A'
         }
         create('products',data)
     print "Import products success"
@@ -45,13 +46,14 @@ def import_reasons():
         code = decode_barcode(path)[0][0]
         data = {
             'name': name[0],
-            'code': code
+            'code': code,
+            'count':0,
         }
         create('reasons', data)
     print "Import reasons success"
 
 init_workstations()
-import_products('w1')
+import_products('Top workstation')
 import_reasons()
 
 

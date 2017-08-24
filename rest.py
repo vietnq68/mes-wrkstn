@@ -40,4 +40,14 @@ def pass_workstation(name,id,data):
     url = base_url + name + '/' + id +'/pass_wrkstn'
     response = requests.put(url,data)
     return response
-# update('products','599576a6d1bc0c6bb7c6925e','')
+
+def workstation_process(id,data):
+    url = base_url + 'products' + '/' + id + '/process'
+    response = requests.put(url, data)
+    return response
+
+def paretoChart(id):
+    url = base_url + 'reasons' + '/' + id + '/pareto'
+    response = requests.put(url)
+    return response
+

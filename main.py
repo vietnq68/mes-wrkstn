@@ -15,6 +15,8 @@ class Window(QWidget):
       self.test_popup = QDialog()
       self.fix_popup = QDialog()
       self.status = 'N/A'
+      self.completed = 0
+      self.progress = QProgressBar(self.win)
 
    def add_item(self,f):
       # item = QListWidgetItem(f)
@@ -31,7 +33,10 @@ class Window(QWidget):
       for w in self.workstations:
          self.cb.addItem(w['type']+' - '+w['name'])
       self.cb.currentIndexChanged.connect(self.selectionchange)
-      self.cb.move(250, 30)
+      self.cb.move(190, 30)
+
+      self.progress.move(500, 0)
+      self.progress.hide()
 
       self.mes = QLabel(self.win)
       self.mes.setText("message:")
@@ -56,7 +61,7 @@ class Window(QWidget):
          x += width + 20
          btn.show()
          self.win.setGeometry(400,200,600,350)
-         self.win.setWindowTitle("PyQt")
+         self.win.setWindowTitle("VNTP-MES")
          self.win.show()
 
    def selectionchange(self, i):
@@ -65,7 +70,9 @@ class Window(QWidget):
 
    def scan_barcode(self):
       self.mes.hide()
+      self.progress.hide()
       self.tested = False
+      self.fixed = False
       btn = self.sender()
       #read barcode
       v = btn.property('value').toPyObject()
@@ -79,6 +86,7 @@ class Window(QWidget):
          if 'next_wrkstn_id' in self.product and self.product['next_wrkstn_id'] != self.workstation['_id']:
             self.show_message("Product is not scan at previous workstation","Error")
             return
+      self.progress.show()
       #update product
       # handle if workstation is test
       if self.workstation['type'] == 'Test':
@@ -89,11 +97,15 @@ class Window(QWidget):
       #handle if workstation is fix
       elif self.workstation['type'] == 'Fix':
          self.product_fix_popup()
+         if self.fixed:
+            self.sender().setStyleSheet("background-color: grey")
+            self.sender().setEnabled(False)
       else:
          self.update_state()
          self.sender().setStyleSheet("background-color: grey")
          self.sender().setEnabled(False)
          self.show_message("Product scan success", "Success")
+      self.processing()
 
    def product_test_popup(self):
       btnPass = QPushButton(self.test_popup)
@@ -153,6 +165,7 @@ class Window(QWidget):
       self.test_popup.close()
 
    def on_fixed(self):
+      self.fixed = True
       # read barcode
       v = self.sender().property('value').toPyObject()
       barcode = decode_barcode(v)[0][0]
@@ -163,6 +176,8 @@ class Window(QWidget):
          'error_reason':reason['_id']
       }
       update('products', self.product['_id'], data)
+      update('reasons', reason['_id'],{'count':reason['count']+1})
+      paretoChart(reason['_id'])
       self.fix_popup.close()
 
    def update_state(self):
@@ -172,6 +187,7 @@ class Window(QWidget):
       data = {
             'status':status,
             'scan_time':scan_time,
+            'current_wrkstn_id':self.workstation['_id'],
       }
       if self.workstation['type'] == 'Test' and self.status == 'true':
          next_wrkstn_id=''
@@ -187,7 +203,7 @@ class Window(QWidget):
       data['_id'] = self.product['_id']
       data['pcb_id'] = self.product['pcb_id']
       pass_workstation('products', self.product['_id'], data)
-      # if this workstation is the last, update realtime product number finish/error
+      # if this workstation is test, update realtime product number finish/error
       if self.workstation['type'] == 'Test':
          if status == 'true':
             finished_socket('products',self.product['_id'])
@@ -204,6 +220,22 @@ class Window(QWidget):
       elif type == 'Success':
          self.mes.setStyleSheet("color: green;")
       self.mes.show()
+
+   def processing(self):
+      data = {
+         'is_running': 'true',
+         'product': self.product['_id'],
+         'pcb_id':self.product['pcb_id'],
+         'workstation_name':self.workstation['name'],
+         'workstation_id':self.workstation['_id'],
+      }
+      workstation_process(self.product['_id'],data)
+      self.completed = 0
+      while self.completed < 100:
+         self.completed += 0.00002
+         self.progress.setValue(self.completed)
+      data['is_running'] = 'false'
+      workstation_process(self.product['_id'], data)
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
