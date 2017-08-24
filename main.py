@@ -116,14 +116,14 @@ class Window(QWidget):
       self.processing()
       btnPass = QPushButton(self.test_popup)
       btnPass.setText('Pass')
-      btnPass.setProperty('value', 'true')
+      btnPass.setProperty('value', 'Pass')
       btnPass.setStyleSheet("color: green;")
       btnPass.move(50,10)
       btnPass.show()
       btnPass.clicked.connect(self.on_tested)
       btnFail = QPushButton(self.test_popup)
       btnFail.setText('Fail')
-      btnFail.setProperty('value', 'false')
+      btnFail.setProperty('value', 'Fail')
       btnFail.setStyleSheet("color: red;")
       btnFail.move(50, 40)
       btnFail.show()
@@ -169,14 +169,14 @@ class Window(QWidget):
       self.show_message("Update state success", "Success")
       self.test_popup.close()
       self.workstation_done()
-      if self.status == 'true':
+      if self.status == 'Pass':
          finished_socket('products', self.product['_id'])
       else:
          error_socket('products', self.product['_id'])
 
    def on_fixed(self):
       self.fixed = True
-      self.status = 'true'
+      self.status = 'Pass'
       # read barcode
       v = self.sender().property('value').toPyObject()
       barcode = decode_barcode(v)[0][0]
@@ -239,10 +239,9 @@ class Window(QWidget):
       }
 
       product_data ={
-         'status':self.status
+         'status':str(self.status)
       }
-
-      if self.status =='true':
+      if self.status =='Pass':
          data['next_wrkstn_name'] = 'None'
       elif 'next_wrkstn_id' in self.workstation:
          next_workstation = get_one('workstations', self.workstation['next_wrkstn_id']).json()
