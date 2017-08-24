@@ -90,6 +90,7 @@ class Window(QWidget):
       #update product
       # handle if workstation is test
       if self.workstation['type'] == 'Test':
+         self.update_state()
          self.product_test_popup()
          if self.tested:
             self.sender().setStyleSheet("background-color: grey")
@@ -100,14 +101,18 @@ class Window(QWidget):
          if self.fixed:
             self.sender().setStyleSheet("background-color: grey")
             self.sender().setEnabled(False)
+            self.processing()
+            self.workstation_done()
       else:
          self.update_state()
          self.sender().setStyleSheet("background-color: grey")
          self.sender().setEnabled(False)
          self.show_message("Product scan success", "Success")
-      self.processing()
+         self.processing()
+         self.workstation_done()
 
    def product_test_popup(self):
+      self.processing()
       btnPass = QPushButton(self.test_popup)
       btnPass.setText('Pass')
       btnPass.setProperty('value', 'true')
@@ -160,9 +165,13 @@ class Window(QWidget):
       self.tested = True
       btn = self.sender()
       self.status = btn.property('value').toPyObject()
-      self.update_state()
       self.show_message("Update state success", "Success")
       self.test_popup.close()
+      self.workstation_done()
+      if self.status == 'true':
+         finished_socket('products', self.product['_id'])
+      else:
+         error_socket('products', self.product['_id'])
 
    def on_fixed(self):
       self.fixed = True
@@ -177,7 +186,7 @@ class Window(QWidget):
       }
       update('products', self.product['_id'], data)
       update('reasons', reason['_id'],{'count':reason['count']+1})
-      paretoChart(reason['_id'])
+      paretoChart(self.product['_id'])
       self.fix_popup.close()
 
    def update_state(self):
@@ -185,7 +194,6 @@ class Window(QWidget):
       status= str(self.status)
       scan_time = datetime.datetime.now()
       data = {
-            'status':status,
             'scan_time':scan_time,
             'current_wrkstn_id':self.workstation['_id'],
       }
@@ -203,12 +211,6 @@ class Window(QWidget):
       data['_id'] = self.product['_id']
       data['pcb_id'] = self.product['pcb_id']
       pass_workstation('products', self.product['_id'], data)
-      # if this workstation is test, update realtime product number finish/error
-      if self.workstation['type'] == 'Test':
-         if status == 'true':
-            finished_socket('products',self.product['_id'])
-         else:
-            error_socket('products',self.product['_id'])
 
    def get_workstations(self):
       self.workstations = get_all('workstations').json()
@@ -222,19 +224,19 @@ class Window(QWidget):
       self.mes.show()
 
    def processing(self):
-      data = {
-         'is_running': 'true',
-         'product': self.product['_id'],
-         'pcb_id':self.product['pcb_id'],
-         'workstation_name':self.workstation['name'],
-         'workstation_id':self.workstation['_id'],
-      }
-      workstation_process(self.product['_id'],data)
       self.completed = 0
       while self.completed < 100:
          self.completed += 0.00002
          self.progress.setValue(self.completed)
-      data['is_running'] = 'false'
+
+   def workstation_done(self):
+      data = {
+         'status': self.status,
+         'product': self.product['_id'],
+         'pcb_id': self.product['pcb_id'],
+         'workstation_name': self.workstation['name'],
+         'workstation_id': self.workstation['_id'],
+      }
       workstation_process(self.product['_id'], data)
 
 if __name__ == '__main__':

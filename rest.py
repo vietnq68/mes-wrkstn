@@ -47,7 +47,7 @@ def workstation_process(id,data):
     return response
 
 def paretoChart(id):
-    url = base_url + 'reasons' + '/' + id + '/pareto'
+    url = base_url + 'products' + '/' + id + '/pareto'
     response = requests.put(url)
     return response
 
