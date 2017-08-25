@@ -231,7 +231,7 @@ class Window(QWidget):
 
    def workstation_done(self):
       data = {
-         'status': self.status,
+         'status': str(self.status),
          'product': self.product['_id'],
          'pcb_id': self.product['pcb_id'],
          'workstation_name': self.workstation['name'],
