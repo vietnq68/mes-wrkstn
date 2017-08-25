@@ -4,6 +4,7 @@ from PyQt4.QtGui import *
 from utils import *
 from rest import *
 import datetime
+import time
 
 class Window(QWidget):
    def __init__(self):
@@ -17,6 +18,7 @@ class Window(QWidget):
       self.status = 'N/A'
       self.completed = 0
       self.progress = QProgressBar(self.win)
+      self.progress_text = QLabel(self.win)
 
    def add_item(self,f):
       # item = QListWidgetItem(f)
@@ -37,6 +39,10 @@ class Window(QWidget):
 
       self.progress.move(500, 0)
       self.progress.hide()
+
+      self.progress_text.move(510, 25)
+      self.progress_text.setText('heloooooooo')
+      self.progress_text.hide()
 
       self.mes = QLabel(self.win)
       self.mes.setText("message:")
@@ -71,6 +77,7 @@ class Window(QWidget):
    def scan_barcode(self):
       self.mes.hide()
       self.progress.hide()
+      self.progress_text.hide()
       self.tested = False
       self.fixed = False
       btn = self.sender()
@@ -87,6 +94,7 @@ class Window(QWidget):
             self.show_message("Product is not scan at previous workstation","Error")
             return
       self.progress.show()
+      self.progress_status('running')
       #update product
       # handle if workstation is test
       if self.workstation['type'] == 'Test':
@@ -103,14 +111,14 @@ class Window(QWidget):
             self.sender().setStyleSheet("background-color: grey")
             self.sender().setEnabled(False)
             self.processing()
-            self.workstation_done()
+            self.processing_signal('finish')
       else:
          self.update_state()
          self.sender().setStyleSheet("background-color: grey")
          self.sender().setEnabled(False)
          self.show_message("Product scan success", "Success")
          self.processing()
-         self.workstation_done()
+         self.processing_signal('finish')
 
    def product_test_popup(self):
       self.processing()
@@ -168,7 +176,7 @@ class Window(QWidget):
       self.status = btn.property('value').toPyObject()
       self.show_message("Update state success", "Success")
       self.test_popup.close()
-      self.workstation_done()
+      self.processing_signal('finish')
       if self.status == 'Pass':
          finished_socket('products', self.product['_id'])
       else:
@@ -224,13 +232,37 @@ class Window(QWidget):
       self.mes.show()
 
    def processing(self):
+      #script for demo
       self.completed = 0
-      while self.completed < 100:
-         self.completed += 0.00002
-         self.progress.setValue(self.completed)
+      delay = 0
+      if self.workstation['name'] == 'Bot workstation':#script line pending
+         while self.completed < 65:
+            self.completed += 0.00002
+            self.progress.setValue(self.completed)
 
-   def workstation_done(self):
+         self.processing_signal('pending')
+         self.progress_status('pending')
+         time.sleep(3)
+
+         self.processing_signal('running')
+         self.progress_status('running')
+
+         while self.completed < 100:
+            self.completed += 0.00002
+            self.progress.setValue(self.completed)
+      else:
+         while self.completed < 100:
+            self.completed += 0.00002
+            self.progress.setValue(self.completed)
+      self.progress_status('finish')
+
+   def processing_signal(self,type):
+      signal =0
+      if type == 'running':
+         signal = 1
       data = {
+         'progress':type,
+         'signal':signal,
          'status': str(self.status),
          'product': self.product['_id'],
          'pcb_id': self.product['pcb_id'],
@@ -248,8 +280,21 @@ class Window(QWidget):
          data['next_wrkstn_name'] = next_workstation['name']
          product_data['next_wrkstn_id'] = next_workstation['_id']
 
-      update('products', self.product['_id'], product_data)
       workstation_process(self.product['_id'], data)
+      if type == 'finish':
+         update('products', self.product['_id'], product_data)
+
+   def progress_status(self,status):
+      self.progress_text.show()
+      if status == 'running':
+         self.progress_text.setText('Running ...')
+         self.progress_text.setStyleSheet("color: blue")
+      elif status == 'finish':
+         self.progress_text.setText('     Finish')
+         self.progress_text.setStyleSheet("color: green")
+      elif status == 'pending':
+         self.progress_text.setText('    Pending')
+         self.progress_text.setStyleSheet("color: orange")
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
