@@ -80,6 +80,7 @@ class Window(QWidget):
       self.progress_text.hide()
       self.tested = False
       self.fixed = False
+      self.quality = search('quality', 'name=product').json()
       btn = self.sender()
       #read barcode
       v = btn.property('value').toPyObject()
@@ -98,6 +99,7 @@ class Window(QWidget):
       #update product
       # handle if workstation is test
       if self.workstation['type'] == 'Test':
+         self.processing_signal('running')
          self.update_state()
          self.product_test_popup()
          if self.tested:
@@ -105,6 +107,7 @@ class Window(QWidget):
             self.sender().setEnabled(False)
       #handle if workstation is fix
       elif self.workstation['type'] == 'Fix':
+         self.processing_signal('running')
          self.update_state()
          self.product_fix_popup()
          if self.fixed:
@@ -113,6 +116,7 @@ class Window(QWidget):
             self.processing()
             self.processing_signal('finish')
       else:
+         self.processing_signal('running')
          self.update_state()
          self.sender().setStyleSheet("background-color: grey")
          self.sender().setEnabled(False)
@@ -179,8 +183,10 @@ class Window(QWidget):
       self.processing_signal('finish')
       if self.status == 'Pass':
          finished_socket('products', self.product['_id'])
+         update('quality',self.quality['_id'],{'success_count':self.quality['success_count'] + 1})
       else:
          error_socket('products', self.product['_id'])
+         update('quality', self.quality['_id'], {'error_count': self.quality['error_count'] + 1})
 
    def on_fixed(self):
       self.fixed = True
@@ -270,9 +276,10 @@ class Window(QWidget):
          'workstation_id': self.workstation['_id'],
       }
 
-      product_data ={
-         'status':str(self.status)
+      product_data = {
+         'process': type,
       }
+
       if self.status =='Pass':
          data['next_wrkstn_name'] = 'None'
       elif 'next_wrkstn_id' in self.workstation:
@@ -281,17 +288,21 @@ class Window(QWidget):
          product_data['next_wrkstn_id'] = next_workstation['_id']
 
       workstation_process(self.product['_id'], data)
+
       if type == 'finish':
-         update('products', self.product['_id'], product_data)
+         product_data['status'] = str(self.status)
+      update('products', self.product['_id'], product_data)
 
    def progress_status(self,status):
       self.progress_text.show()
       if status == 'running':
          self.progress_text.setText('Running ...')
          self.progress_text.setStyleSheet("color: blue")
+         self.progress.setStyleSheet("background-color: blue")
       elif status == 'finish':
          self.progress_text.setText('     Finish')
          self.progress_text.setStyleSheet("color: green")
+         self.progress.setStyleSheet("background-color: green")
       elif status == 'pending':
          self.progress_text.setText('    Pending')
          self.progress_text.setStyleSheet("color: orange")

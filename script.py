@@ -52,8 +52,19 @@ def import_reasons():
         create('reasons', data)
     print "Import reasons success"
 
+def create_product_quality():
+    data = {
+        'name': 'product',
+        'success_count': 0,
+        'error_count': 0,
+    }
+    create('quality', data)
+
+    print "Create product quality success"
+
 init_workstations()
 import_products('Top workstation')
 import_reasons()
+create_product_quality()
 
 
