@@ -285,12 +285,11 @@ class Window(QWidget):
       elif 'next_wrkstn_id' in self.workstation:
          next_workstation = get_one('workstations', self.workstation['next_wrkstn_id']).json()
          data['next_wrkstn_name'] = next_workstation['name']
-         product_data['next_wrkstn_id'] = next_workstation['_id']
+         if type == 'finish':
+            product_data['status'] = str(self.status)
+            product_data['next_wrkstn_id'] = next_workstation['_id']
 
       workstation_process(self.product['_id'], data)
-
-      if type == 'finish':
-         product_data['status'] = str(self.status)
       update('products', self.product['_id'], product_data)
 
    def progress_status(self,status):
