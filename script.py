@@ -49,14 +49,23 @@ def import_reasons():
             'code': code,
             'count':0,
         }
+        #4642, 4345, 2350, 1251
+        if data['name'] == 'Reason_1':
+            data['count'] == 46
+        elif data['name'] == 'Reason_2':
+            data['count'] == 43
+        elif data['name'] == 'Reason_3':
+            data['count'] == 23
+        elif data['name'] == 'Reason_4':
+            data['count'] == 12
         create('reasons', data)
     print "Import reasons success"
 
 def create_product_quality():
     data = {
         'name': 'product',
-        'success_count': 0,
-        'error_count': 0,
+        'success_count': 421,
+        'error_count': 124,
     }
     create('quality', data)
 
