@@ -24,41 +24,51 @@ def init_workstations():
 
 
 def import_products(workstation_name):
-    files = get_files('image/products/')
-    for f in files:
-        path = 'image/products/'+f
-        pcbid = decode_barcode(path)[0][0]
-        param = 'name='+workstation_name
-        fisrt_workstation = search('workstations',param).json()
+    param = 'name='+workstation_name
+    fisrt_workstation = search('workstations',param).json()
+    # files = get_files('image/products/')
+    # for f in files:
+    #     path = 'image/products/'+f
+    #     pcbid = decode_barcode(path)[0][0]
+    #     param = 'name='+workstation_name
+    #     fisrt_workstation = search('workstations',param).json()
+    #     data ={
+    #         'next_wrkstn_id':fisrt_workstation['_id'],
+    #         'pcb_id':pcbid,
+    #         'status':'N/A'
+    #     }
+    #     create('products',data)
+    for f in range(1,10):
         data ={
-            'next_wrkstn_id':fisrt_workstation['_id'],
-            'pcb_id':pcbid,
-            'status':'N/A'
+                'next_wrkstn_id':fisrt_workstation['_id'],
+                'pcb_id':f,
+                'status':'N/A'
         }
-        create('products',data)
+        create('products', data)
     print "Import products success"
 
 def import_reasons():
     files = get_files('image/reasons/')
-    for f in files:
-        path = 'image/reasons/' + f
-        name = f.split('.')
-        code = decode_barcode(path)[0][0]
+    for f in range(1,10):
+        # path = 'image/reasons/' + f
+        # name = f.split('.')
+        # code = decode_barcode(path)[0][0]
         data = {
-            'name': name[0],
-            'code': code,
+            'name': 'Reason_'+str(f),
+            'code': f,
             'count':0,
         }
         #4642, 4345, 2350, 1251
         if data['name'] == 'Reason_1':
-            data['count'] == 46
+            data['count'] = 46
         elif data['name'] == 'Reason_2':
-            data['count'] == 43
+            data['count'] = 43
         elif data['name'] == 'Reason_3':
-            data['count'] == 23
+            data['count'] = 23
         elif data['name'] == 'Reason_4':
-            data['count'] == 12
+            data['count'] = 12
         create('reasons', data)
+        # print data
     print "Import reasons success"
 
 def create_product_quality():
