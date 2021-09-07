@@ -4,7 +4,7 @@ enum34==1.1.6
 idna==2.6
 olefile==0.44
 pathlib==1.0.1
-Pillow==4.2.1
+Pillow==8.3.2
 pyBarcode==0.7
 pyzbar==0.1.4
 requests==2.18.4
